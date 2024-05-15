@@ -1,0 +1,28 @@
+version: "3.7"
+services:
+## Redis ################################################
+  # redis:
+  #   build: ./docker/redis
+  #   container_name: ${APP_NAME}-dev-redis
+  #   volumes:
+  #     - ${DATA_PATH_HOST}/redis:/data
+  #   ports:
+  #     - "${FORWARD_REDIS_PORT}:6379"
+  #   networks:
+  #     - ${APP_NAME}-network
+  mongodb:
+    image: mongo
+    container_name: ${APP_NAME}-dev-mongodb
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ${DATA_PATH_HOST}/mongodb:/data/db
+    ports:
+      - "${MONGO_FORWARD_PORT:-27017}:27017"
+    restart: unless-stopped
+    networks:
+      - ${APP_NAME}-network
+networks:
+  nest-starter-network:
+    driver: bridge

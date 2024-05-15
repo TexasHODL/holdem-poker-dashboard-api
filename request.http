@@ -1,0 +1,150 @@
+
+# Post count player rake report
+POST http://localhost:3000/countDataForRakeBack
+#POST https://pokermoogley.olive-team.dev/countDataForRakeBack
+content-type: application/json
+
+{
+    "rakeByUsername": "testagent01",
+    "startDate": 1649149200000,
+    "endDate": 1666579500000
+}
+
+###-----------------------------------------
+
+# Post player rake report
+POST http://localhost:3000/playerRakeBackReport
+#POST https://pokermoogley.olive-team.dev/playerRakeBackReport
+content-type: application/json
+
+{
+    "rakeByUsername": "testagent01",
+    "startDate": 1649149200000,
+    "endDate": 1666579500000,
+    "skip":0,
+    "limit":20
+}
+
+###
+POST http://localhost:3000/countRakebackData
+#POST https://pokermoogley.olive-team.dev/countRakebackData
+content-type: application/json
+
+{
+    "filterReferenceNo": "FKIMWZOTH",
+    "startTime": 1649149200000,
+    "endTime": 1666579500000,
+    "filterPlayer": "testagent01",
+    "parentUser": "agent01"
+}
+
+###
+POST http://localhost:3000/listRakebackData
+Content-Type: application/json
+
+{
+    "filterReferenceNo": "FKIMWZOTH",
+    "startTime": 1649149200000,
+    "endTime": 1666579500000,
+    "filterPlayer": "testagent01",
+    "parentUser": "agent01",
+    "skip": 0,
+    "limit":20
+}
+
+###
+POST http://localhost:3000/listTransactionHistory
+#POST https://pokermoogley.olive-team.dev/countRakebackData
+content-type: application/json
+
+{
+    "Name":"test014",
+    "transactionType":"Credit",
+    "transferMode":"FUND TRANSFER",
+    "referenceNumber":"CKAVSMNZTY",
+    "userType":"PLAYER",
+    "startDate":1651510800001,
+    "endDate":1666544399000,
+    "sortValue":"date",
+    "skip":0,
+    "limit":20
+}
+
+###
+POST http://localhost:3000/countDataInTransactionHistory
+#POST https://pokermoogley.olive-team.dev/countRakebackData
+content-type: application/json
+
+{
+    "Name":"test014",
+    "transactionType":"Credit",
+    "transferMode":"FUND TRANSFER",
+    "referenceNumber":"CKAVSMNZTY",
+    "userType":"PLAYER",
+    "startDate":1651510800001,
+    "endDate":1666544399000,
+    "sortValue":"date"
+}
+
+###
+POST http://localhost:3000/listPlayerForBuildAcess
+Content-Type: application/json
+
+{
+    "userName":"test",
+    "email":"priyadarshan.shrivastava@creatiosoft.com",
+    "mobile":"7099830374"
+}
+
+###
+POST http://localhost:3000/updatePlayerBuildAcess
+Content-Type: application/json
+
+{
+    "_id":"62711b1053d5aa06fbfe4083",
+    "buildAccess": {
+        "androidApp":false,
+        "iosApp":true,
+        "mac":true,
+        "browser":true,
+        "windows":true,
+        "website":true
+        }
+}
+
+###
+POST http://localhost:3000/dailyChipsReport
+Content-Type: application/json
+
+{
+    "referenceNumber":"CKAVSMNZTY",
+    "Name":"test014",
+    "loginId":"test014",
+    "amount":
+        {
+            "$gte":2,
+            "$lte":100100
+        },
+    "transferMode":"FUND TRANSFER",
+    "date":{
+        "$gte":1648944000000,"$lt":1667951999000
+    },
+    "sortValue":"date",
+    "skip":0,
+    "limit":20
+}
+
+###
+
+POST http://localhost:3000/dailyChipsChart
+Content-Type: application/json
+
+{"addeddate":1651363200000,"role":{"name":"admin","level":7}}
+
+###
+POST http://localhost:3000/listMonthlyBonusChipsReport
+Content-Type: application/json
+
+{
+    "addeddate": 1651363200000
+}
