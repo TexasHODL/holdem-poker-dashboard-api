@@ -1,4 +1,4 @@
-import { Mixed } from 'mongoose';
+import { Mixed } from "mongoose";
 
 export interface greaterLessThenType {
   $gte: number;

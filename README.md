@@ -1,1 +1,1 @@
-# Holdem Poker New Dashboard API
+# Holdem Poker Dashboard API

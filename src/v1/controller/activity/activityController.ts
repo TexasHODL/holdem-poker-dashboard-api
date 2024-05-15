@@ -1,4 +1,4 @@
-import { Request } from 'express';
+import { Request } from "express";
 import {
   constant,
   isArray,
@@ -8,23 +8,23 @@ import {
   isString,
   lte,
   sum,
-} from 'lodash';
-import { RESPONSE_CODES } from '../../constants';
+} from "lodash";
+import { RESPONSE_CODES } from "../../constants";
 import {
   findTotalChipsAddedAggregate,
   findTotalRakeGenerated,
   findUserOpts,
   findUserSessionCountInDB,
   loginData,
-} from '../../model/queries/activity';
-import MESSAGES from '../../helpers/messages.error';
+} from "../../model/queries/activity";
+import MESSAGES from "../../helpers/messages.error";
 import {
   datesPayload,
   paramsDate,
   paramsType,
   PlayerDataResultType,
-} from './activityInterface';
-import logger from '../../logger';
+} from "./activityInterface";
+import logger from "../../logger";
 
 const catch_response: any = {
   ...RESPONSE_CODES[400],
@@ -49,29 +49,29 @@ export const findTotalRakeYesterday = async (req: Request) => {
         0,
         0,
         0,
-        0,
-      ),
+        0
+      )
     );
     const endDate = startDate + 1 * 24 * 60 * 60 * 1000;
     const query = { addeddate: { $gte: startDate, $lt: endDate } };
 
     const response: any = await findTotalRakeGenerated(
       query,
-      '$rakeRefType',
-      '$debitToCompany',
+      "$rakeRefType",
+      "$debitToCompany"
     );
     if (isArray(response) && !isEmpty(response)) {
       return {
         ...RESPONSE_CODES[200],
         success: true,
-        info: 'Total rake for yesterfday found',
+        info: "Total rake for yesterfday found",
         result: { sumOfRake: response[0].amount.toFixed(2) },
       };
     } else if (isArray(response) && isEmpty(response)) {
       return {
         ...RESPONSE_CODES[200],
         succes: true,
-        info: 'Total Rake for Yesterday',
+        info: "Total Rake for Yesterday",
         result: { sumOfRake: 0 },
       };
     } else {
@@ -101,8 +101,8 @@ const setStartDateEndDateForYesterday = async () => {
       0,
       0,
       0,
-      0,
-    ),
+      0
+    )
   );
   const endDate = startDate + 1 * 24 * 60 * 60 * 1000;
   return {
@@ -120,8 +120,8 @@ const setStartDateEndDateForToday = async () => {
       0,
       0,
       0,
-      0,
-    ),
+      0
+    )
   );
   const endDate = startDate + 1 * 24 * 60 * 60 * 1000;
   return {
@@ -133,7 +133,7 @@ const setStartDateEndDateForToday = async () => {
 const findPlayerData = async (dates: datesPayload) => {
   const query = { startDate: dates.startDate, endDate: dates.endDate };
   const response: PlayerDataResultType = (await loginData(query)) as any;
-  console.log('findPlayerData response ========>', response);
+  console.log("findPlayerData response ========>", response);
 
   if (isObject(response) && !isEmpty(response)) {
     return response.playerCount;
@@ -152,7 +152,7 @@ const findPlayerData = async (dates: datesPayload) => {
 
 export const findPlayerLoginData = async (req: Request) => {
   try {
-    console.log('inside findPlayerLogin Data ', JSON.stringify(req.body));
+    console.log("inside findPlayerLogin Data ", JSON.stringify(req.body));
     const OnlinePlayers = await findTotalPlayersOnline();
     const datesForYesterday = await setStartDateEndDateForYesterday();
     const playersLoggedInYesterday = await findPlayerData(datesForYesterday);
@@ -161,7 +161,7 @@ export const findPlayerLoginData = async (req: Request) => {
     return {
       ...RESPONSE_CODES[200],
       success: true,
-      info: 'player login data find successfully !',
+      info: "player login data find successfully !",
       result: {
         onlinePlayers: OnlinePlayers,
         totalPlayersLoggedInYesterday: playersLoggedInYesterday || 0,
@@ -178,8 +178,8 @@ const getAggreateSumOfRake = async (startDate: number, endDate: number) => {
   const query = { addeddate: { $gte: startDate, $lt: endDate } };
   const response: any = await findTotalRakeGenerated(
     query,
-    '$rakeRefType',
-    '$debitToCompany',
+    "$rakeRefType",
+    "$debitToCompany"
   );
   return response;
 };
@@ -198,8 +198,8 @@ export const findTotalRakeLastWeek = async (req: Request) => {
         0,
         0,
         0,
-        0,
-      ),
+        0
+      )
     );
     const endDate = startDate + 7 * 24 * 60 * 60 * 1000;
     const response: any = await getAggreateSumOfRake(startDate, endDate);
@@ -207,14 +207,14 @@ export const findTotalRakeLastWeek = async (req: Request) => {
       return {
         ...RESPONSE_CODES[200],
         success: true,
-        info: 'Total rake for last week ',
+        info: "Total rake for last week ",
         result: { sumOfRake: response[0].amount.toFixed(2) },
       };
     } else if (isArray(response) && isEmpty(response)) {
       return {
         ...RESPONSE_CODES[200],
         succes: true,
-        info: 'Total Rake for last week',
+        info: "Total Rake for last week",
         result: { sumOfRake: 0 },
       };
     } else {
@@ -244,8 +244,8 @@ const setStartTimeEndTimeForPartialYesterday = async (date: number) => {
       0,
       0,
       0,
-      0,
-    ),
+      0
+    )
   );
   const endingDate = new Date(date);
   const endDate = Number(endingDate.setDate(endingDate.getDate() - 1));
@@ -272,8 +272,8 @@ export const findPartialRakeGeneratedDay = async (req: Request) => {
         0,
         0,
         0,
-        0,
-      ),
+        0
+      )
     );
     const endDate = Number(new Date());
     const todayRake = await getAggreateSumOfRake(startDate, endDate);
@@ -285,7 +285,7 @@ export const findPartialRakeGeneratedDay = async (req: Request) => {
     const newTime = await setStartTimeEndTimeForPartialYesterday(endDate);
     const yesterdayRake = await getAggreateSumOfRake(
       newTime.startDate,
-      newTime.endDate,
+      newTime.endDate
     );
 
     if (isArray(yesterdayRake) && !isEmpty(yesterdayRake)) {
@@ -295,7 +295,7 @@ export const findPartialRakeGeneratedDay = async (req: Request) => {
     return {
       ...RESPONSE_CODES[200],
       success: true,
-      info: 'partial rake generated today and yesterday',
+      info: "partial rake generated today and yesterday",
       result: {
         partialRakeToday,
         partialRakeYesterday,
@@ -316,7 +316,7 @@ export const findPartialRakeGeneratedDay = async (req: Request) => {
 
 const setStartTimeEndTimeForPartialLastWeek = async (
   sDate: number,
-  eDate: number,
+  eDate: number
 ) => {
   const startingDate = new Date(sDate);
   const startDate = Number(startingDate.setDate(startingDate.getDate() - 7));
@@ -344,8 +344,8 @@ export const findPartialRakeGenerated = async (req: Request) => {
         0,
         0,
         0,
-        0,
-      ),
+        0
+      )
     );
     const endDate = Number(new Date());
     let partialRakeThisWeek = 0;
@@ -366,11 +366,11 @@ export const findPartialRakeGenerated = async (req: Request) => {
 
     const timeForlastWeek = await setStartTimeEndTimeForPartialLastWeek(
       startDate,
-      endDate,
+      endDate
     );
     const lastWeekRake = await getAggreateSumOfRake(
       timeForlastWeek.startDate,
-      timeForlastWeek.endDate,
+      timeForlastWeek.endDate
     );
     if (isArray(lastWeekRake) && !isEmpty(lastWeekRake)) {
       partialRakeLastWeek = lastWeekRake[0].amount.toFixed(2);
@@ -385,7 +385,7 @@ export const findPartialRakeGenerated = async (req: Request) => {
     return {
       ...RESPONSE_CODES[200],
       success: true,
-      info: 'partial rake this week and last week',
+      info: "partial rake this week and last week",
       result: {
         partialRakeThisWeek,
         partialRakeLastWeek,
@@ -411,8 +411,8 @@ const setStartDateEndDateForLastWeek = async () => {
       0,
       0,
       0,
-      0,
-    ),
+      0
+    )
   );
   const endDate = startDate + 7 * 24 * 60 * 60 * 1000;
   return {
@@ -436,8 +436,8 @@ const setStartDateEndDateForPartialToday = async () => {
       0,
       0,
       0,
-      0,
-    ),
+      0
+    )
   );
   const endDate = Number(new Date());
   return {
@@ -455,8 +455,8 @@ const setStartDateEndDateForPartialYesterday = async (eDate: number) => {
       0,
       0,
       0,
-      0,
-    ),
+      0
+    )
   );
   const endingDate = new Date(eDate);
   const endDate = Number(endingDate.setDate(endingDate.getDate() - 1));
@@ -473,7 +473,7 @@ const setStartDateEndDateForPartialYesterday = async (eDate: number) => {
 
 const findTotalChipsAdded = async (sDate: number, eDate: number) => {
   const query = {
-    status: 'SUCCESS',
+    status: "SUCCESS",
     date: { $gte: sDate, $lt: eDate },
   };
   const response: any = (await findTotalChipsAddedAggregate(query)) as any;
@@ -484,7 +484,7 @@ const findTotalChipsAdded = async (sDate: number, eDate: number) => {
     });
     return { sumOfChips: sumOfChips };
   } else {
-    return { sumOfChips: 'Unable to find total chips added' };
+    return { sumOfChips: "Unable to find total chips added" };
   }
 };
 
@@ -497,8 +497,8 @@ const setStartDateEndDateForPartialThisWeek = async () => {
       0,
       0,
       0,
-      0,
-    ),
+      0
+    )
   );
   const endDate = Number(new Date());
   return {
@@ -509,7 +509,7 @@ const setStartDateEndDateForPartialThisWeek = async () => {
 
 const setStartDateEndDateForPartialLastWeek = async (
   sDate: number,
-  eDate: number,
+  eDate: number
 ) => {
   const startingDate = new Date(sDate);
   const startDate = Number(startingDate.setDate(startingDate.getDate() - 7));
@@ -531,42 +531,42 @@ export const calculateChipsAddedPartialForDashboard = async (req: Request) => {
     const yesterday = await setStartDateEndDateForYesterday();
     const totalChipsAddedYesterday = await findTotalChipsAdded(
       yesterday.startDate,
-      yesterday.endDate,
+      yesterday.endDate
     );
     const lastWeek = await setStartDateEndDateForLastWeek();
     const totalChipsAddedLastWeek = await findTotalChipsAdded(
       lastWeek.startDate,
-      lastWeek.endDate,
+      lastWeek.endDate
     );
     const partialToday = await setStartDateEndDateForPartialToday();
     const totalchipsAddedPartialToday = await findTotalChipsAdded(
       partialToday.startDate,
-      partialToday.endDate,
+      partialToday.endDate
     );
     const partialYesterday = await setStartDateEndDateForPartialYesterday(
-      partialToday.endDate,
+      partialToday.endDate
     );
     const totalchipsAddedPartialYesterday = await findTotalChipsAdded(
       partialYesterday.startDate,
-      partialYesterday.endDate,
+      partialYesterday.endDate
     );
     const partialThisWeek = await setStartDateEndDateForPartialThisWeek();
     const totalChipsAddedPartialThisWeek = await findTotalChipsAdded(
       partialThisWeek.startDate,
-      partialThisWeek.endDate,
+      partialThisWeek.endDate
     );
     const partialLastWeek = await setStartDateEndDateForPartialLastWeek(
       partialThisWeek.startDate,
-      partialThisWeek.endDate,
+      partialThisWeek.endDate
     );
     const totalChipsAddedPartialLastWeek = await findTotalChipsAdded(
       partialLastWeek.startDate,
-      partialLastWeek.endDate,
+      partialLastWeek.endDate
     );
     return {
       ...RESPONSE_CODES[200],
       success: true,
-      info: 'Total chips added data found ',
+      info: "Total chips added data found ",
       result: {
         totalChipsAddedYesterday: totalChipsAddedYesterday.sumOfChips,
         totalChipsAddedLastWeek: totalChipsAddedLastWeek.sumOfChips,
@@ -649,11 +649,11 @@ export const findNewPlayersJoinData = async (req: Request) => {
     const datePartialToday = await setStartDateEndDateForPartialToday();
     const newPlayersToday = await findNewPlayerJoinData(datePartialToday);
     const datePartialMonth = await setStartTimeEndTimeForPartialMonth(
-      datePartialToday,
+      datePartialToday
     );
     const newPlayersThisMonth = await findNewPlayerJoinData(datePartialMonth);
     const datePartialYear = await setStartTimeEndTimeForPartialYear(
-      datePartialMonth,
+      datePartialMonth
     );
     const newPlayersThisYear = await findNewPlayerJoinData(datePartialYear);
     const allPlayersJoinData = await findAllPlayersJoinData();
@@ -661,7 +661,7 @@ export const findNewPlayersJoinData = async (req: Request) => {
     return {
       ...RESPONSE_CODES[200],
       success: true,
-      info: 'New players join data found',
+      info: "New players join data found",
       result: {
         newPlayersToday,
         newPlayersThisMonth,

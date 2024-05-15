@@ -1,4 +1,4 @@
-import { Request, response } from 'express';
+import { Request, response } from "express";
 import {
   isArray,
   isEmpty,
@@ -9,10 +9,10 @@ import {
   get,
   filter,
   difference,
-} from 'lodash';
-import { RESPONSE_CODES } from '../../constants';
-import MESSAGES from '../../helpers/messages.error';
-import { fromObject, fromParams, isPayloadValid } from '../../helpers/utils';
+} from "lodash";
+import { RESPONSE_CODES } from "../../constants";
+import MESSAGES from "../../helpers/messages.error";
+import { fromObject, fromParams, isPayloadValid } from "../../helpers/utils";
 import {
   countPlayerBonusCodeUsedByPlayers,
   deleteExistingLeaderboard,
@@ -28,7 +28,7 @@ import {
   insertLeaderboard,
   updateBounsDataForDirectEntry,
   updateLeaderboardData,
-} from '../../model/queries/leaderboardManagement';
+} from "../../model/queries/leaderboardManagement";
 import {
   bonusDetailsType,
   closedRaceResponseType,
@@ -47,7 +47,7 @@ import {
   playerDataType,
   playerObjectType,
   udpateDataType,
-} from './leaderboardManagementInterface';
+} from "./leaderboardManagementInterface";
 import {
   countDirectEntryHistoryRequest,
   createLeaderboardRequest,
@@ -56,11 +56,11 @@ import {
   directEntryRequest,
   editLeaderboardRequest,
   leaderboardParticipantsRequest,
-} from './leaderboardManagementType';
-import randomize from 'randomatic';
-import { v4 as uuidv4 } from 'uuid';
-import { Constants } from '../../helpers/configConstants';
-import logger from '../../logger';
+} from "./leaderboardManagementType";
+import randomize from "randomatic";
+import { v4 as uuidv4 } from "uuid";
+import { Constants } from "../../helpers/configConstants";
+import logger from "../../logger";
 
 const success_response: any = {
   ...RESPONSE_CODES[200],
@@ -106,19 +106,19 @@ export const listLeaderboard = async (req: Request) => {
     if (isArray(response) && !isEmpty(response)) {
       return {
         ...success_response,
-        info: 'leaderboard list found',
+        info: "leaderboard list found",
         result: response,
       };
     } else if (isArray(response) && isEmpty(response)) {
       return {
         ...success_response,
-        info: 'leaderboard list is empty',
+        info: "leaderboard list is empty",
         result: response,
       };
     } else {
       return {
         ...error_response,
-        info: 'Error while getting list!',
+        info: "Error while getting list!",
       };
     }
   } catch (err) {
@@ -136,27 +136,27 @@ export const getTables = async (req: Request) => {
     const query: getTablesPayload = {
       isActive: true,
     };
-    if (get(req, 'body.isRealMoney')) {
-      query.isRealMoney = get(req, 'body.isRealMoney');
+    if (get(req, "body.isRealMoney")) {
+      query.isRealMoney = get(req, "body.isRealMoney");
     }
 
     const response: any = await getTablesList(query);
     if (isArray(response) && !isEmpty(response)) {
       return {
         ...success_response,
-        info: 'Tables list found',
+        info: "Tables list found",
         result: response,
       };
     } else if (isArray(response) && isEmpty(response)) {
       return {
         ...success_response,
-        info: 'Tables list is empty',
+        info: "Tables list is empty",
         result: response,
       };
     } else {
       return {
         ...error_response,
-        info: 'Something went wrong!! unable to get table',
+        info: "Something went wrong!! unable to get table",
       };
     }
   } catch (err) {
@@ -166,30 +166,30 @@ export const getTables = async (req: Request) => {
 };
 
 const manageCloseRace = async (
-  params: createLeaderboardPayload | editLeaderboardPayload,
+  params: createLeaderboardPayload | editLeaderboardPayload
 ) => {
   if (
-    params.leaderboardType === 'closedVip' ||
-    params.leaderboardType === 'closedHand'
+    params.leaderboardType === "closedVip" ||
+    params.leaderboardType === "closedHand"
   ) {
     if (!params.bonusCode) {
       return {
         ...error_response,
-        info: 'Kindly provide Bonus Code key in Closed Race.',
+        info: "Kindly provide Bonus Code key in Closed Race.",
       };
     } else {
       const query = {
         codeName: params.bonusCode.toUpperCase(),
-        status: 'Live',
+        status: "Live",
       };
       const response: any = await findBonus(query);
       if (!isEmpty(response)) {
-        if (response[0].status === 'EXPIRED') {
+        if (response[0].status === "EXPIRED") {
           return {
             ...error_response,
-            info: 'Bonus Code is Expired.',
+            info: "Bonus Code is Expired.",
           };
-        } else if (response[0].bonusCodeCategory.type != 'leaderboardEntry') {
+        } else if (response[0].bonusCodeCategory.type != "leaderboardEntry") {
           return {
             ...error_response,
           };
@@ -219,12 +219,12 @@ const manageCloseRace = async (
 //need to update any with custom interface.
 const createLeaderboardData = async (params: any) => {
   const data: DataType = {
-    leaderboardId: randomize('A0', 8),
+    leaderboardId: randomize("A0", 8),
     leaderboardName: params.leaderboardName,
     leaderboardType: params.leaderboardType,
     startTime: params.startTime,
     endTime: params.endTime,
-    status: 'Waiting',
+    status: "Waiting",
     minVipPoints: params.minVipPoints,
     minHands: params.minHands,
     noOfWinners: params.noOfWinners,
@@ -235,7 +235,7 @@ const createLeaderboardData = async (params: any) => {
     usedInSet: false,
     percentAccumulation: params.percentAccumulation,
     minRake: 0,
-    description: '',
+    description: "",
     termsCondition: [],
   };
   if (params.description) {
@@ -258,13 +258,13 @@ const createLeaderboardData = async (params: any) => {
   if (!isEmpty(response)) {
     return {
       ...success_response,
-      info: 'Leaderboard created successfully',
+      info: "Leaderboard created successfully",
       result: response,
     };
   } else {
     return {
       ...error_response,
-      info: 'Error while creating leaderboard',
+      info: "Error while creating leaderboard",
     };
   }
 };
@@ -277,15 +277,15 @@ export const createLeaderboard = async (req: Request) => {
   try {
     const requestPayload: any = fromObject(
       req,
-      createLeaderboardRequest as createLeaderboardPayload,
+      createLeaderboardRequest as createLeaderboardPayload
     ) as createLeaderboardPayload;
     const { isValid, message } = isPayloadValid(
       requestPayload,
-      createLeaderboardRequest,
+      createLeaderboardRequest
     );
     if (isValid) {
       const checkClosedRace: closedRaceResponseType = await manageCloseRace(
-        req.body,
+        req.body
       );
       if (checkClosedRace.success && !isEmpty(checkClosedRace.result)) {
         return await createLeaderboardData(checkClosedRace.result);
@@ -297,7 +297,7 @@ export const createLeaderboard = async (req: Request) => {
         ...RESPONSE_CODES[400],
         success: false,
         message: message,
-        info: 'request payload is not valid!',
+        info: "request payload is not valid!",
       };
     }
   } catch (err) {
@@ -312,33 +312,33 @@ const getSpecificLeaderboard = async (id: string) => {
   if (!isEmpty(response)) {
     return {
       ...success_response,
-      info: 'leaderboard found',
+      info: "leaderboard found",
       result: { leaderboardData: response },
     };
   } else {
     return {
       ...error_response,
-      info: 'Leaderboard not found',
+      info: "Leaderboard not found",
       result: { leaderboardData: {} },
     };
   }
 };
 
 const removeLeaderboard = async (params: deleteLeaderboardPayload) => {
-  if (params.leaderboardData.status === 'Waiting') {
+  if (params.leaderboardData.status === "Waiting") {
     const query = { _id: params.id };
 
     const response: any = await deleteExistingLeaderboard(query);
     if (!isEmpty(response)) {
       return {
         ...success_response,
-        info: 'Leaderboard deleted successfully',
+        info: "Leaderboard deleted successfully",
         result: response,
       };
     } else {
       return {
         ...error_response,
-        info: 'Error in deleting leaderboard!',
+        info: "Error in deleting leaderboard!",
       };
     }
   }
@@ -352,14 +352,14 @@ export const deleteLeaderboard = async (req: Request) => {
   try {
     const requestPayload: any = fromObject(
       req,
-      deleteLeaderboardRequest as deleteLeaderboardPayload,
+      deleteLeaderboardRequest as deleteLeaderboardPayload
     ) as deleteLeaderboardPayload;
     const { isValid, message } = isPayloadValid(
       requestPayload,
-      deleteLeaderboardRequest,
+      deleteLeaderboardRequest
     );
     if (isValid) {
-      const findLeaderboard = await getSpecificLeaderboard(get(req, 'body.id'));
+      const findLeaderboard = await getSpecificLeaderboard(get(req, "body.id"));
       if (findLeaderboard.success) {
         return await removeLeaderboard(req.body);
       } else {
@@ -369,7 +369,7 @@ export const deleteLeaderboard = async (req: Request) => {
       return {
         ...error_response,
         message: message,
-        info: 'Invalid parameters to delete leaderboard',
+        info: "Invalid parameters to delete leaderboard",
       };
     }
   } catch (err) {
@@ -381,8 +381,8 @@ export const deleteLeaderboard = async (req: Request) => {
 const prepareUpdateData = async (params: any) => {
   try {
     if (
-      get(params, 'leaderboardData.status') === 'Waiting' ||
-      get(params, 'leaderboardData.status') === 'Running'
+      get(params, "leaderboardData.status") === "Waiting" ||
+      get(params, "leaderboardData.status") === "Running"
     ) {
       const updateData: udpateDataType = {
         leaderboardName: params.leaderboardName,
@@ -404,8 +404,8 @@ const prepareUpdateData = async (params: any) => {
         updateData.description = params.description;
       }
       if (
-        params.leaderboardType == 'closedVip' ||
-        params.leaderboardType == 'closedHand'
+        params.leaderboardType == "closedVip" ||
+        params.leaderboardType == "closedHand"
       ) {
         if (params.bonusCode) {
           updateData.bonusCode = params.bonusCode;
@@ -413,13 +413,13 @@ const prepareUpdateData = async (params: any) => {
         } else {
           return {
             ...error_response,
-            info: 'Kindly provide Bonus code for Closed VIP Race.',
+            info: "Kindly provide Bonus code for Closed VIP Race.",
             data: null,
           };
         }
       } else {
-        updateData.bonusCode = '';
-        updateData.bonusId = '';
+        updateData.bonusCode = "";
+        updateData.bonusId = "";
       }
 
       return {
@@ -429,7 +429,7 @@ const prepareUpdateData = async (params: any) => {
     } else {
       return {
         ...error_response,
-        info: 'Leaderboard can not be editable in Expired state',
+        info: "Leaderboard can not be editable in Expired state",
         data: {},
       };
     }
@@ -445,12 +445,12 @@ const updateLeaderboard = async (id: string, updateData: udpateDataType) => {
   if (!isEmpty(response)) {
     return {
       ...success_response,
-      info: 'Leaderboard updated successfully',
+      info: "Leaderboard updated successfully",
     };
   } else {
     return {
       ...error_response,
-      info: 'Error occured in updating leaderboard!',
+      info: "Error occured in updating leaderboard!",
     };
   }
 };
@@ -463,31 +463,31 @@ export const editLeaderboard = async (req: Request) => {
   try {
     const requestPayload: any = fromObject(
       req,
-      editLeaderboardRequest as editLeaderboardPayload,
+      editLeaderboardRequest as editLeaderboardPayload
     ) as editLeaderboardPayload;
     const { isValid, message } = isPayloadValid(
       requestPayload,
-      editLeaderboardRequest,
+      editLeaderboardRequest
     );
     if (isValid) {
-      const getLeaderboard = await getSpecificLeaderboard(get(req, 'body.id'));
+      const getLeaderboard = await getSpecificLeaderboard(get(req, "body.id"));
 
       if (getLeaderboard.success) {
         requestPayload.leaderboardData = getLeaderboard.result.leaderboardData;
 
         const closedVipRace: closedRaceResponseType = await manageCloseRace(
-          requestPayload,
+          requestPayload
         );
 
         if (closedVipRace.success) {
           const prepareData: any = await prepareUpdateData(
-            closedVipRace.result,
+            closedVipRace.result
           );
 
           if (prepareData.success) {
             return await updateLeaderboard(
-              get(req, 'body.id'),
-              prepareData.data,
+              get(req, "body.id"),
+              prepareData.data
             );
           } else {
             return prepareData; //return error response
@@ -502,7 +502,7 @@ export const editLeaderboard = async (req: Request) => {
       return {
         ...error_response,
         message: message,
-        info: 'Invalid Request Payload!',
+        info: "Invalid Request Payload!",
       };
     }
   } catch (err) {
@@ -517,13 +517,13 @@ const getPlayerInfo = async (params: directEntryPayload) => {
   if (!isEmpty(response)) {
     return {
       ...success_response,
-      info: 'user list',
+      info: "user list",
       result: { playerInfo: response },
     };
   } else {
     return {
       ...error_response,
-      info: 'no player found',
+      info: "no player found",
       result: { playerInfo: {} },
     };
   }
@@ -532,8 +532,8 @@ const getPlayerInfo = async (params: directEntryPayload) => {
 export const bonusDetail = async (params: directEntryPayload) => {
   const bonusQuery = {
     codeName: params.bonusCode,
-    'bonusCodeCategory.type': 'leaderboardEntry',
-    status: 'Live',
+    "bonusCodeCategory.type": "leaderboardEntry",
+    status: "Live",
   };
   const response: any = await findBonus(bonusQuery);
 
@@ -550,7 +550,7 @@ export const bonusDetail = async (params: directEntryPayload) => {
   } else {
     return {
       ...error_response,
-      info: 'Error in getting bonus details',
+      info: "Error in getting bonus details",
       result: { bonusData: {} },
     };
   }
@@ -558,19 +558,19 @@ export const bonusDetail = async (params: directEntryPayload) => {
 
 const getPlayerBonusDetails = async (params: directEntryPayload) => {
   const playerBonusQuery = {
-    playerId: get(params, 'playerData.playerId'),
+    playerId: get(params, "playerData.playerId"),
   };
   const response: any = await findPlayerBonusDetails(playerBonusQuery);
   if (response) {
     return {
       ...success_response,
-      info: 'player bonus details found ',
+      info: "player bonus details found ",
       result: response,
     };
   } else {
     return {
       ...error_response,
-      info: 'Error occurred while getting player bonus code details',
+      info: "Error occurred while getting player bonus code details",
       result: response,
     };
   }
@@ -582,18 +582,18 @@ const getPlayerBonusDetails = async (params: directEntryPayload) => {
 
 const checkIfBonusCodeAlreadyUsed = async (
   playerBonusData: any,
-  bonusData: any,
+  bonusData: any
 ) => {
   //need to replace any with custom interface.
 
   let playerDirectEntryNeeded;
-  if (get(playerBonusData, 'result.bonus.length') != 0) {
-    const bonusIdsUsedByPlayer = uniq(map(playerBonusData.bonus, 'bonusId'));
+  if (get(playerBonusData, "result.bonus.length") != 0) {
+    const bonusIdsUsedByPlayer = uniq(map(playerBonusData.bonus, "bonusId"));
     if (bonusIdsUsedByPlayer.indexOf(bonusData.bonusId) != -1) {
       //if player has used this bonus code before.
       return {
         ...error_response,
-        info: 'This bonus code has been already used by this player',
+        info: "This bonus code has been already used by this player",
         result: null,
       };
     } else {
@@ -620,15 +620,15 @@ const setExpiry = async (time: any) => {
 export const createPlayerDirectEntry = async (
   bonusAlreadyUsed: any,
   playerData: any,
-  bonusData: any,
+  bonusData: any
 ) => {
-  if (get(bonusAlreadyUsed, 'result.playerDirectEntryNeeded')) {
+  if (get(bonusAlreadyUsed, "result.playerDirectEntryNeeded")) {
     const playerDirectEntryQuery = {
-      playerId: get(playerData, 'result.playerInfo.playerId'),
+      playerId: get(playerData, "result.playerInfo.playerId"),
     };
     const playerDirectEntryData = {
-      bonusId: get(bonusData, 'result.bonusData.bonusId'),
-      name: get(bonusData, 'result.bonusData.codeName'),
+      bonusId: get(bonusData, "result.bonusData.bonusId"),
+      name: get(bonusData, "result.bonusData.codeName"),
       unClaimedBonus: 0,
       instantBonusAmount: 0,
       claimedBonus: 0,
@@ -644,24 +644,24 @@ export const createPlayerDirectEntry = async (
     };
     const response: any = await updateBounsDataForDirectEntry(
       playerDirectEntryQuery,
-      updateQuery,
+      updateQuery
     );
     if (!isEmpty(response)) {
       return {
         ...success_response,
-        info: 'Player direct entry successfull',
+        info: "Player direct entry successfull",
         result: response,
       };
     } else {
       return {
         ...error_response,
-        info: 'Error occured while giving the direct entry to this player in leaderboard',
+        info: "Error occured while giving the direct entry to this player in leaderboard",
       };
     }
   } else {
     return {
       ...error_response,
-      info: 'Getting error while giving direct entry in leaderboard to the player',
+      info: "Getting error while giving direct entry in leaderboard to the player",
     };
   }
 };
@@ -674,11 +674,11 @@ export const directEntryPlayer = async (req: Request) => {
   try {
     const requestPayload: any = fromObject(
       req,
-      directEntryRequest as directEntryPayload,
+      directEntryRequest as directEntryPayload
     ) as directEntryPayload;
     const { isValid, message } = isPayloadValid(
       requestPayload,
-      directEntryRequest,
+      directEntryRequest
     );
     if (isValid) {
       const playerData = await getPlayerInfo(req.body);
@@ -694,14 +694,14 @@ export const directEntryPlayer = async (req: Request) => {
           if (playerBonusData.success) {
             const bonusAlreadyUsed = await checkIfBonusCodeAlreadyUsed(
               playerBonusData,
-              bonusData,
+              bonusData
             );
 
             if (bonusAlreadyUsed.success) {
               return await createPlayerDirectEntry(
                 bonusAlreadyUsed,
                 playerData,
-                bonusData,
+                bonusData
               );
             } else {
               return bonusAlreadyUsed;
@@ -719,7 +719,7 @@ export const directEntryPlayer = async (req: Request) => {
       return {
         ...error_response,
         message: message,
-        info: 'Invalid payload',
+        info: "Invalid payload",
       };
     }
   } catch (err) {
@@ -732,29 +732,29 @@ export const directEntryPlayer = async (req: Request) => {
  * method used to get the bonus code details and check whether the given bonus code exists or not.
  */
 const getBonusDetails = async (
-  params: countDirectEntryHistoryPayload | directEntryHistoryPayload,
+  params: countDirectEntryHistoryPayload | directEntryHistoryPayload
 ) => {
   const bonusQuery = {
     codeName: params.bonusCode,
-    'bonusCodeCategory.type': 'leaderboardEntry',
+    "bonusCodeCategory.type": "leaderboardEntry",
   };
   const response: any = await findBonus(bonusQuery);
 
   if (isArray(response) && !isEmpty(response)) {
     return {
       ...success_response,
-      info: 'Bonus Code list is found',
+      info: "Bonus Code list is found",
       result: response[0],
     };
   } else if (isArray(response) && isEmpty(response)) {
     return {
       ...error_response,
-      info: 'Bonus code is not found',
+      info: "Bonus code is not found",
     };
   } else {
     return {
       ...error_response,
-      info: 'Error occured while getting bonus code details',
+      info: "Error occured while getting bonus code details",
       result: [],
     };
   }
@@ -762,8 +762,8 @@ const getBonusDetails = async (
 
 const countPlayerBonusCodeUsedDetails = async (params: any) => {
   //need to update any with custom interface
-  const bonusId = get(params, 'result.bonusId');
-  const query = { 'bonus.bonusId': bonusId };
+  const bonusId = get(params, "result.bonusId");
+  const query = { "bonus.bonusId": bonusId };
   const response: any = await countPlayerBonusCodeUsedByPlayers(query);
   if (isNumber(response)) {
     return {
@@ -773,7 +773,7 @@ const countPlayerBonusCodeUsedDetails = async (params: any) => {
   } else {
     return {
       ...error_response,
-      info: 'Error occurred while getting player bonus code  details',
+      info: "Error occurred while getting player bonus code  details",
     };
   }
 };
@@ -786,17 +786,17 @@ export const countDirectEntryHistory = async (req: Request) => {
   try {
     const requestPayload: any = fromObject(
       req,
-      countDirectEntryHistoryRequest as countDirectEntryHistoryPayload,
+      countDirectEntryHistoryRequest as countDirectEntryHistoryPayload
     ) as countDirectEntryHistoryPayload;
     const { isValid, message } = isPayloadValid(
       requestPayload,
-      countDirectEntryHistoryRequest,
+      countDirectEntryHistoryRequest
     );
     if (isValid) {
       const bonusDetail = await getBonusDetails(requestPayload);
-      if (bonusDetail.success && !isEmpty(get(bonusDetail, 'result'))) {
+      if (bonusDetail.success && !isEmpty(get(bonusDetail, "result"))) {
         return await countPlayerBonusCodeUsedDetails(bonusDetail);
-      } else if (bonusDetail.success && isEmpty(get(bonusDetail, 'result'))) {
+      } else if (bonusDetail.success && isEmpty(get(bonusDetail, "result"))) {
         return {
           ...success_response,
           result: 0,
@@ -808,7 +808,7 @@ export const countDirectEntryHistory = async (req: Request) => {
       return {
         ...error_response,
         message,
-        info: 'Invalid request payload',
+        info: "Invalid request payload",
       };
     }
   } catch (err) {
@@ -821,12 +821,12 @@ export const countDirectEntryHistory = async (req: Request) => {
  * method used to get details of players who have used bonus code.
  */
 const getPlayerBonusCodeUsedDetails = async (
-  params: directEntryHistoryPayload,
+  params: directEntryHistoryPayload
 ) => {
   const query = {
-    skip: get(params, 'skip'),
-    limit: get(params, 'limit'),
-    bonusId: get(params, 'bonusData.bonusId'),
+    skip: get(params, "skip"),
+    limit: get(params, "limit"),
+    bonusId: get(params, "bonusData.bonusId"),
   };
 
   const response: any = await findBonusUsedByPlayersDirectEntry(query);
@@ -838,12 +838,12 @@ const getPlayerBonusCodeUsedDetails = async (
   } else if (isArray(response) && isEmpty(response)) {
     return {
       ...error_response,
-      info: 'No records found!!',
+      info: "No records found!!",
     };
   } else {
     return {
       ...error_response,
-      info: 'error in getting bonus used by players',
+      info: "error in getting bonus used by players",
       result: [],
     };
   }
@@ -853,7 +853,7 @@ const getPlayerBonusCodeUsedDetails = async (
  * method used to find the userName from playerId
  */
 export const findUserNameFromPlayerId = async (
-  params: directEntryHistoryPayload,
+  params: directEntryHistoryPayload
 ) => {
   try {
     const dataArray: playerBonusDataType[] = params.playerBonusData;
@@ -866,14 +866,14 @@ export const findUserNameFromPlayerId = async (
     }
     return {
       ...success_response,
-      info: 'direct entry history of player found',
+      info: "direct entry history of player found",
       result: params,
     };
   } catch (err) {
     logger.error(`findUserNameFromPlayerId , error ${err}`);
     return {
       ...error_response,
-      info: 'error in getting userName from playerId',
+      info: "error in getting userName from playerId",
     };
   }
 };
@@ -886,23 +886,23 @@ export const directEntryHistoryPlayer = async (req: Request) => {
   try {
     const requestPayload: any = fromObject(
       req,
-      directEntryHistoryRequest as directEntryHistoryPayload,
+      directEntryHistoryRequest as directEntryHistoryPayload
     ) as directEntryHistoryPayload;
     const { isValid, message } = isPayloadValid(
       requestPayload,
-      directEntryHistoryRequest,
+      directEntryHistoryRequest
     );
     if (isValid) {
       const bonusDetail = await getBonusDetails(requestPayload);
 
       if (bonusDetail.success) {
-        requestPayload.bonusData = get(bonusDetail, 'result');
+        requestPayload.bonusData = get(bonusDetail, "result");
         const bonusCodeUsed = await getPlayerBonusCodeUsedDetails(
-          requestPayload,
+          requestPayload
         );
 
         if (bonusCodeUsed.success) {
-          requestPayload.playerBonusData = get(bonusCodeUsed, 'result');
+          requestPayload.playerBonusData = get(bonusCodeUsed, "result");
           return await findUserNameFromPlayerId(requestPayload);
         } else {
           return bonusCodeUsed; //return error response
@@ -914,7 +914,7 @@ export const directEntryHistoryPlayer = async (req: Request) => {
       return {
         ...error_response,
         message,
-        info: 'Invalid request payload',
+        info: "Invalid request payload",
       };
     }
   } catch (err) {
@@ -934,15 +934,15 @@ const getLeaderboard = async (params: leaderboardParticipantsPayload) => {
   } else {
     return {
       ...error_response,
-      info: 'Error occured while getting the leaderboard details.',
+      info: "Error occured while getting the leaderboard details.",
     };
   }
 };
 
 const findParticipantOfLeaderboard = async (
-  params: findParticipantParamsType,
+  params: findParticipantParamsType
 ) => {
-  const query = { leaderboardId: get(params, 'leaderboardData.leaderboardId') };
+  const query = { leaderboardId: get(params, "leaderboardData.leaderboardId") };
   const response: any = await getLeaderboardParticipant(query);
   if (isArray(response) && !isEmpty(response)) {
     return {
@@ -952,13 +952,13 @@ const findParticipantOfLeaderboard = async (
   } else if (isArray(response) && isEmpty(response)) {
     return {
       ...error_response,
-      info: 'No participants found in Leaderboard',
+      info: "No participants found in Leaderboard",
       result: [],
     };
   } else {
     return {
       ...error_response,
-      info: 'Error while fetching participants',
+      info: "Error while fetching participants",
     };
   }
 };
@@ -967,28 +967,28 @@ const findParticipantOfLeaderboard = async (
  * This method is used in case of VIP Race only. It is used to find the no of player who has crossed min Vip criteria.
  */
 const countPlayerCrossedVip = async (
-  params: leaderboardParticipantsPayload,
+  params: leaderboardParticipantsPayload
 ) => {
   let tempParticipants = [];
   if (
-    get(params, 'leaderboardData.leaderboardType') === 'openVip' ||
-    get(params, 'leaderboardData.leaderboardType') === 'closedVip'
+    get(params, "leaderboardData.leaderboardType") === "openVip" ||
+    get(params, "leaderboardData.leaderboardType") === "closedVip"
   ) {
-    if (get(params, 'leaderboardData.minVipPoints')) {
+    if (get(params, "leaderboardData.minVipPoints")) {
       tempParticipants = filter(
-        get(params, 'participantsArray'),
+        get(params, "participantsArray"),
         (obj: any) => {
-          return obj.total >= get(params, 'leaderboardData.minVipPoints');
-        },
+          return obj.total >= get(params, "leaderboardData.minVipPoints");
+        }
       );
     }
   } else {
-    if (get(params, 'leaderboardData.minHands')) {
+    if (get(params, "leaderboardData.minHands")) {
       tempParticipants = filter(
-        get(params, 'participantsArray'),
+        get(params, "participantsArray"),
         (obj: any) => {
-          return obj.total >= get(params, 'leaderboardData.minHands');
-        },
+          return obj.total >= get(params, "leaderboardData.minHands");
+        }
       );
     }
   }
@@ -997,7 +997,7 @@ const countPlayerCrossedVip = async (
 };
 
 const sortParticipantsData = async (params: leaderboardParticipantsPayload) => {
-  const participantsArray = get(params, 'participantsArray');
+  const participantsArray = get(params, "participantsArray");
   if (participantsArray) {
     participantsArray.sort((a: any, b: any) => {
       if (a.total == b.total) {
@@ -1015,9 +1015,9 @@ const sortParticipantsData = async (params: leaderboardParticipantsPayload) => {
  * This method is used only in case of Closed Race. This is to get the player list who has used the bonus code for specific leaderboard.
  */
 const getPlayerUsedCodeForClosedRace = async (
-  params: findParticipantParamsType | leaderboardParticipantsPayload,
+  params: findParticipantParamsType | leaderboardParticipantsPayload
 ) => {
-  const query = get(params, 'leaderboardData.bonusId');
+  const query = get(params, "leaderboardData.bonusId");
   const response: any = await findBonusCodeUsedByPlayers(query);
   if (isArray(response)) {
     return {
@@ -1027,17 +1027,17 @@ const getPlayerUsedCodeForClosedRace = async (
   } else {
     return {
       ...error_response,
-      info: 'Error while getting players bonus data',
+      info: "Error while getting players bonus data",
     };
   }
 };
 
 const assignBonusPlayerInParticipants = async (
-  params: leaderboardParticipantsPayload,
+  params: leaderboardParticipantsPayload
 ) => {
   const remainingPlayer = difference(
-    map(params.playerBonusList, 'playerId'),
-    map(map(params.participantsArray, '_id'), 'pId'),
+    map(params.playerBonusList, "playerId"),
+    map(map(params.participantsArray, "_id"), "pId")
   );
   if (remainingPlayer.length > 0) {
     remainingPlayer.forEach(async (playerId) => {
@@ -1046,18 +1046,18 @@ const assignBonusPlayerInParticipants = async (
       const playerObject: any = {}; //need to update any with custom interface.
       if (isObject(response) && !isEmpty(response)) {
         playerObject._id = {
-          userName: get(response, 'userName'),
-          pId: get(response, 'playerId'),
+          userName: get(response, "userName"),
+          pId: get(response, "playerId"),
         };
         playerObject.total = 0;
         playerObject.myCount = 0;
-        playerObject.parentName = get(response, 'isParentUserName');
+        playerObject.parentName = get(response, "isParentUserName");
         params.participantsArray?.push(playerObject);
       } else {
         // ignore this case (mostly for bots)
         playerObject._id = {
-          userName: 'Player',
-          pId: '1',
+          userName: "Player",
+          pId: "1",
         };
         playerObject.total = 0;
         playerObject.myCount = 0;
@@ -1079,7 +1079,7 @@ const assignBonusPlayerInParticipants = async (
  * method used to get the particular leaderboard details on the basis of leaderboard Name
  */
 const getCurrentLeaderboard = async (
-  params: leaderboardParticipantsPayload,
+  params: leaderboardParticipantsPayload
 ) => {
   const query = { leaderboardId: params.leaderboardId };
   const response: any = await findLeaderboard(query);
@@ -1091,15 +1091,15 @@ const getCurrentLeaderboard = async (
   } else {
     return {
       ...error_response,
-      info: 'Error occured while getting the leaderboard details.',
+      info: "Error occured while getting the leaderboard details.",
     };
   }
 };
 
 const checkLeaderboardType = async (params: leaderboardParticipantsPayload) => {
   if (
-    get(params, 'leaderboardData.leaderboardType') === 'closedHand' ||
-    get(params, 'leaderboardData.leaderboardType') === 'closedVip'
+    get(params, "leaderboardData.leaderboardType") === "closedHand" ||
+    get(params, "leaderboardData.leaderboardType") === "closedVip"
   ) {
     params.crossedVipCount = 0;
     params.participantsArray = [];
@@ -1115,13 +1115,13 @@ const checkLeaderboardType = async (params: leaderboardParticipantsPayload) => {
  * bonus list i.e. which have used bonus code for the closed race
  */
 const addPlayersOfBonusList = async (
-  params: leaderboardParticipantsPayload,
+  params: leaderboardParticipantsPayload
 ) => {
   if (
-    get(params, 'leaderboardData.leaderboardType') === 'closedHand' ||
-    get(params, 'leaderboardData.leaderboardType') === 'closedVip'
+    get(params, "leaderboardData.leaderboardType") === "closedHand" ||
+    get(params, "leaderboardData.leaderboardType") === "closedVip"
   ) {
-    const playerBonusListLength = get(params, 'playerBonusList.length');
+    const playerBonusListLength = get(params, "playerBonusList.length");
     const bonusList = params.playerBonusList;
     if (playerBonusListLength) {
       bonusList?.forEach(async (player) => {
@@ -1130,13 +1130,13 @@ const addPlayersOfBonusList = async (
         const response: any = await findUser(query);
         if (isEmpty(response)) {
           data._id = {
-            userName: '',
-            pId: '',
+            userName: "",
+            pId: "",
           };
-          data.email = '';
-          data.mobile = '';
-          data.parentName = '';
-          data.rank = 'N/A';
+          data.email = "";
+          data.mobile = "";
+          data.parentName = "";
+          data.rank = "N/A";
         } else if (!isEmpty(response)) {
           data._id = {
             userName: response.userName,
@@ -1145,16 +1145,16 @@ const addPlayersOfBonusList = async (
           data.email = response.email;
           data.mobile = response.mobile;
           data.parentName = response.isParentUserName;
-          data.rank = 'N/A';
+          data.rank = "N/A";
         } else {
           data._id = {
-            userName: 'Player' + player.playerId,
+            userName: "Player" + player.playerId,
             pId: player.playerId,
           };
-          (data.email = 'no email'),
-            (data.mobile = '0000000000'),
-            (data.parentName = 'N/A'),
-            (data.rank = 'N/A');
+          (data.email = "no email"),
+            (data.mobile = "0000000000"),
+            (data.parentName = "N/A"),
+            (data.rank = "N/A");
         }
         params.participantsArray?.push(data);
       });
@@ -1182,60 +1182,60 @@ export const getCurrentLeaderboardParticipants = async (req: Request) => {
   try {
     const requestPayload: any = fromParams(
       req.params,
-      leaderboardParticipantsRequest as leaderboardParticipantsPayload,
+      leaderboardParticipantsRequest as leaderboardParticipantsPayload
     ) as leaderboardParticipantsPayload;
     const { isValid, message } = isPayloadValid(
       requestPayload,
-      leaderboardParticipantsRequest,
+      leaderboardParticipantsRequest
     );
     if (isValid) {
-      if (requestPayload.status === 'Running') {
+      if (requestPayload.status === "Running") {
         const searchLeaderboard = await getLeaderboard(requestPayload);
         if (searchLeaderboard.success) {
-          const result = get(searchLeaderboard, 'result');
+          const result = get(searchLeaderboard, "result");
           const data = { leaderboardData: result };
           if (
-            result.leaderboardType === 'openVip' ||
-            result.leaderboardType === 'openHand'
+            result.leaderboardType === "openVip" ||
+            result.leaderboardType === "openHand"
           ) {
             const findParticipants = await findParticipantOfLeaderboard(data);
 
             if (findParticipants.success) {
               requestPayload.participantsArray = get(
                 findParticipants,
-                'result',
+                "result"
               );
-              requestPayload.leaderboardData = get(data, 'leaderboardData');
+              requestPayload.leaderboardData = get(data, "leaderboardData");
               const playerCrossedVip = await countPlayerCrossedVip(
-                requestPayload,
+                requestPayload
               );
               const sortParticipants = await sortParticipantsData(
-                playerCrossedVip,
+                playerCrossedVip
               );
               return sortParticipants; //need to delete leaderboardId and status from final response.
             } else {
               return findParticipants; //return error response
             }
           } else if (
-            result.leaderboardType === 'closedVip' ||
-            result.leaderboardType === 'closedHand'
+            result.leaderboardType === "closedVip" ||
+            result.leaderboardType === "closedHand"
           ) {
             const getPlayerUsedCode = await getPlayerUsedCodeForClosedRace(
-              data,
+              data
             );
             if (getPlayerUsedCode.success) {
               const findParticipants = await findParticipantOfLeaderboard(data);
-              requestPayload.playerBonusList = get(getPlayerUsedCode, 'result');
-              requestPayload.leaderboardData = get(findParticipants, 'result');
+              requestPayload.playerBonusList = get(getPlayerUsedCode, "result");
+              requestPayload.leaderboardData = get(findParticipants, "result");
               if (findParticipants.success) {
                 const assignBonus = await assignBonusPlayerInParticipants(
-                  requestPayload,
+                  requestPayload
                 );
                 const playerCrossedVip = await countPlayerCrossedVip(
-                  assignBonus.result,
+                  assignBonus.result
                 );
                 const sortParticipants = await sortParticipantsData(
-                  playerCrossedVip,
+                  playerCrossedVip
                 );
                 return sortParticipants;
               } else {
@@ -1247,23 +1247,23 @@ export const getCurrentLeaderboardParticipants = async (req: Request) => {
           } else {
             return {
               ...error_response,
-              info: 'Leaderboard is of invalid type.',
+              info: "Leaderboard is of invalid type.",
             };
           }
         } else {
           return searchLeaderboard; //return error response
         }
-      } else if (requestPayload.status === 'Waiting') {
+      } else if (requestPayload.status === "Waiting") {
         const getLeaderboard = await getCurrentLeaderboard(requestPayload);
         if (getLeaderboard.success) {
-          requestPayload.leaderboardData = get(getLeaderboard, 'result');
+          requestPayload.leaderboardData = get(getLeaderboard, "result");
 
           const checkLeaderboard = await checkLeaderboardType(requestPayload);
           const getPlayerUsedCode = await getPlayerUsedCodeForClosedRace(
-            checkLeaderboard,
+            checkLeaderboard
           );
           if (getPlayerUsedCode.success) {
-            requestPayload.playerBonusList = get(getPlayerUsedCode, 'result');
+            requestPayload.playerBonusList = get(getPlayerUsedCode, "result");
             const addPlayers = await addPlayersOfBonusList(requestPayload);
             return addPlayers;
           } else {
@@ -1275,14 +1275,14 @@ export const getCurrentLeaderboardParticipants = async (req: Request) => {
       } else {
         return {
           ...error_response,
-          info: 'No leaderboard with this info found',
+          info: "No leaderboard with this info found",
         };
       }
     } else {
       return {
         ...error_response,
         message,
-        info: 'invalid request payload!',
+        info: "invalid request payload!",
       };
     }
   } catch (err) {
